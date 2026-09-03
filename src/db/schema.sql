@@ -35,3 +35,15 @@ CREATE INDEX IF NOT EXISTS idx_attendance_employee_time
 
 CREATE INDEX IF NOT EXISTS idx_templates_employee
     ON fingerprint_templates(employee_id);
+
+-- Single shared admin credential (id fixed at 1 — one admin per kiosk).
+-- Gates employee management, registration, enrollment, and log viewing at
+-- the IPC boundary (see authService.js / main.js requireAuth wrapper), not
+-- just in the renderer UI.
+CREATE TABLE IF NOT EXISTS admin_credentials (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    password_hash TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
