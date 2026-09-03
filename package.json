@@ -1,0 +1,29 @@
+{
+  "name": "fingerprint-attendance",
+  "version": "0.1.0",
+  "description": "Desktop employee attendance system with pluggable fingerprint scanner support",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0"
+  },
+  "devDependencies": {
+    "electron": "^31.3.1",
+    "electron-builder": "^25.0.5"
+  },
+  "build": {
+    "appId": "com.yourcompany.fingerprint-attendance",
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "mac": {
+      "target": "dmg"
+    }
+  }
+}
