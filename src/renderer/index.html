@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Attendance System</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="kiosk">Attendance Kiosk</button>
+      <button class="tab-btn" data-tab="register">Register Employee</button>
+      <button class="tab-btn" data-tab="employees">Employees</button>
+      <button class="tab-btn" data-tab="enroll">Add Fingerprint</button>
+      <button class="tab-btn" data-tab="logs">Recent Logs</button>
+    </nav>
+
+    <main>
+      <section id="tab-kiosk" class="tab-panel active"></section>
+      <section id="tab-register" class="tab-panel"></section>
+      <section id="tab-employees" class="tab-panel"></section>
+      <section id="tab-enroll" class="tab-panel"></section>
+      <section id="tab-logs" class="tab-panel"></section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
