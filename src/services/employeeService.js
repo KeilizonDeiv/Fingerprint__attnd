@@ -1,6 +1,34 @@
+const MAX_FIELD_LENGTH = 100;
+
 class EmployeeService {
   constructor(db) {
     this.db = db;
+  }
+
+  /**
+   * Defense-in-depth: the renderer already trims/requires these fields, but
+   * services must never trust the renderer — validate again here so a
+   * malformed IPC call (or a future non-UI caller) can't write garbage or
+   * oversized rows.
+   */
+  _validateFields({ employeeCode, firstName, lastName, department }) {
+    const checkString = (value, name, { required }) => {
+      if (value == null || value === '') {
+        if (required) throw new Error(`${name} is required`);
+        return;
+      }
+      if (typeof value !== 'string') {
+        throw new Error(`${name} must be a string`);
+      }
+      if (value.length > MAX_FIELD_LENGTH) {
+        throw new Error(`${name} must be ${MAX_FIELD_LENGTH} characters or fewer`);
+      }
+    };
+
+    checkString(employeeCode, 'employeeCode', { required: true });
+    checkString(firstName, 'firstName', { required: true });
+    checkString(lastName, 'lastName', { required: true });
+    checkString(department, 'department', { required: false });
   }
 
   /**
@@ -38,6 +66,12 @@ class EmployeeService {
     if (!existing) {
       throw new Error('Employee not found.');
     }
+    this._validateFields({
+      employeeCode: employeeCode ?? existing.employee_code,
+      firstName: firstName ?? existing.first_name,
+      lastName: lastName ?? existing.last_name,
+      department: department ?? existing.department,
+    });
     this.db
       .prepare(
         `UPDATE employees
@@ -65,9 +99,7 @@ class EmployeeService {
   }
 
   create({ employeeCode, firstName, lastName, department }) {
-    if (!employeeCode || !firstName || !lastName) {
-      throw new Error('employeeCode, firstName, and lastName are required');
-    }
+    this._validateFields({ employeeCode, firstName, lastName, department });
     try {
       const result = this.db
         .prepare(
@@ -111,9 +143,18 @@ class EmployeeService {
       .all();
   }
 
+  /**
+   * Metadata only — deliberately excludes template_data. Fingerprint
+   * templates are biometric PII; nothing outside the DB/scanner-matching
+   * path (see attendanceService.getAllTemplatesWithEmployee, used
+   * internally, never sent over IPC) should ever see the raw encoded data.
+   */
   getTemplatesForEmployee(employeeId) {
     return this.db
-      .prepare('SELECT * FROM fingerprint_templates WHERE employee_id = ?')
+      .prepare(
+        `SELECT id, employee_id, finger_position, enrolled_at
+         FROM fingerprint_templates WHERE employee_id = ?`
+      )
       .all(employeeId);
   }
 }
